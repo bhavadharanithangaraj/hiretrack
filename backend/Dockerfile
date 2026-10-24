@@ -22,4 +22,6 @@ USER spring
 COPY --from=build /app/target/hiretrack-backend-*.jar app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# By default Java only uses 25% of the container's memory for its heap;
+# 75% makes better use of small hosting plans (e.g. 512 MB on Render's free tier)
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]
