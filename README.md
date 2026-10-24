@@ -6,6 +6,19 @@ HireTrack is a full-stack web app for keeping track of your job applications. Yo
 
 It's built with a **Spring Boot REST API** secured with **JWT**, a **PostgreSQL** database, and a **Next.js + Material UI** frontend, all runnable with a single `docker compose up`.
 
+## Live Demo
+
+- **App:** https://hiretrack-gold-three.vercel.app
+- **API docs (Swagger):** https://hiretrack-api-rm1h.onrender.com/swagger-ui.html
+
+Register any email to try it. The backend runs on Render's free plan and sleeps when idle, so the **first request can take up to a minute** while it wakes up.
+
+| Part     | Hosted on |
+|----------|-----------|
+| Frontend | Vercel |
+| Backend  | Render (Docker, from [`render.yaml`](render.yaml)) |
+| Database | Neon (serverless PostgreSQL) |
+
 ## Tech Stack
 
 | Layer      | Technologies |
