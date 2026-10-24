@@ -1,3 +1,8 @@
+# Start everything:   docker compose up --build
+# Then open:          http://localhost:3000  (API: http://localhost:8080/swagger-ui.html)
+#
+# Values like ${JWT_SECRET:-default} can be overridden with a .env file next to this one.
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -5,11 +10,47 @@ services:
     environment:
       POSTGRES_DB: hiretrack
       POSTGRES_USER: hiretrack
-      POSTGRES_PASSWORD: hiretrack
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-hiretrack}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    # The backend waits until this check passes before starting
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hiretrack -d hiretrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: hiretrack-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Inside Docker, "postgres" is the hostname of the database container
+      DB_URL: jdbc:postgresql://postgres:5432/hiretrack
+      DB_USERNAME: hiretrack
+      DB_PASSWORD: ${DB_PASSWORD:-hiretrack}
+      JWT_SECRET: ${JWT_SECRET:-docker-dev-secret-change-me-in-production-0123456789}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@hiretrack.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@12345}
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # The browser calls the API directly, so this is the address as seen from your machine
+        NEXT_PUBLIC_API_URL: http://localhost:8080
+    container_name: hiretrack-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
 
 volumes:
   pgdata:
